@@ -51,25 +51,25 @@ jobs:
           sudo apt-get update -y -qq
           sudo apt-get install shaderc libsdl2-dev libdbus-1-dev
 
-      - name: Setup chksum64 and bass
-        run: |
-          mkdir -p tmp
-          cd tmp
-          wget https://raw.githubusercontent.com/DragonMinded/libdragon/trunk/tools/chksum64.c
-          gcc chksum64.c -o chksum64
-          sudo mv chksum64 /bin/
-          git clone https://github.com/ARM9/bass.git
-          cd bass/bass
-          git checkout v14
-          make
-          sudo mv bass /bin/
+    - name: Setup chksum64 and bass
+      run: |
+        mkdir -p tmp
+        cd tmp
+        wget https://raw.githubusercontent.com/DragonMinded/libdragon/trunk/tools/chksum64.c
+        gcc chksum64.c -o chksum64
+        sudo mv chksum64 /bin/
+        git clone https://github.com/ARM9/bass.git
+        cd bass/bass
+        git checkout v14
+        make
+        sudo mv bass /bin/
 
-      - name: Build N64
-        run: |
-          mkdir -p build
-          cd build
-          cmake -DCMAKE_BUILD_TYPE=Release ..
-          make
+    - name: Build N64
+      run: |
+        mkdir -p build
+        cd build
+        cmake -DCMAKE_BUILD_TYPE=Release ..
+        make
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
