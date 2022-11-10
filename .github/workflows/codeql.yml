@@ -28,6 +28,8 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
+      with:
+        submodules: 'recursive'
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
@@ -42,20 +44,32 @@ jobs:
         queries: +security-and-quality
 
         
-    # Autobuild attempts to build any compiled languages  (C/C++, C#, Go, or Java).
-    # If this step fails, then you should remove it and run the build manually (see below)
-    - name: Autobuild
-      uses: github/codeql-action/autobuild@v2
+    - name: Setup dependencies
+        run: |
+          wget -qO - https://packages.lunarg.com/lunarg-signing-key-pub.asc | sudo apt-key add -
+          sudo wget -qO /etc/apt/sources.list.d/lunarg-vulkan-focal.list https://packages.lunarg.com/vulkan/lunarg-vulkan-focal.list
+          sudo apt-get update -y -qq
+          sudo apt-get install shaderc libsdl2-dev libdbus-1-dev
 
-    # ℹ️ Command-line programs to run using the OS shell.
-    # 📚 See https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#jobsjob_idstepsrun
+      - name: Setup chksum64 and bass
+        run: |
+          mkdir -p tmp
+          cd tmp
+          wget https://raw.githubusercontent.com/DragonMinded/libdragon/trunk/tools/chksum64.c
+          gcc chksum64.c -o chksum64
+          sudo mv chksum64 /bin/
+          git clone https://github.com/ARM9/bass.git
+          cd bass/bass
+          git checkout v14
+          make
+          sudo mv bass /bin/
 
-    #   If the Autobuild fails above, remove it and uncomment the following three lines. 
-    #   modify them (or add more) to build your code if your project, please refer to the EXAMPLE below for guidance.
-
-    # - run: |
-    #   echo "Run, Build Application using script"
-    #   ./location_of_script_within_repo/buildscript.sh
+      - name: Build N64
+        run: |
+          mkdir -p build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Release ..
+          make
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v2
